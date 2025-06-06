@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from main import SimulateurTraitement, exoObligatoireMoyenne, exoFacultatif1Mono, exoFacultatif1Moyenne, \
-    exo1VariantMoyenne
+    exo1VariantMoyenne, exo1Variant, exoBayesienMono, BayesienMoyenne
 
 
 def plot_success_tracking(tracking):
@@ -35,8 +35,11 @@ if __name__ == "__main__":
     #mean_total_success, mean_success_tracking, mean_success_rates, mean_proportions = exoObligatoireMoyenne(simulator,1000)
     #total_success, success_tracking, success_rates, proportions = exoFacultatif1Mono(simulator,1000)
     #total_success, success_tracking, success_rates, proportions = exoFacultatif1Moyenne(simulator,1000)
-    total_success, success_tracking, success_rates, proportions = exo1VariantMoyenne(simulator, 1000)
+    #total_success, success_tracking, success_rates, proportions = exo1VariantMoyenne(simulator, 1000)
+    #total_success, success_tracking, success_rates, proportions = exo1Variant(simulator, 1000)
+    #total_success, success_tracking, success_rates, proportions = exoBayesienMono(simulator, 1000)
+    total_success, success_tracking, success_rates, proportions = BayesienMoyenne(simulator, 1000)
     print(f"Succès total moyen : {total_success:.2f}")
     plot_proportions(proportions)
-    plot_success_tracking(success_tracking)
-    plot_success_rates(success_rates)
+    #plot_success_tracking(success_tracking)
+    #eplot_success_rates(success_rates)

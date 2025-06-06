@@ -166,13 +166,14 @@ def pickTheBest(contenders):
             best_nb = pos
     return best_nb
 
-def DiceRoll():
-    if np.random.rand() <0.05: #on avait choisi 5% dans la partie théorique
+def DiceRoll(epsilon):
+    if np.random.rand() <epsilon:
         return 0
     else:
         return 1
 
 def exo1Variant(simulateur,nb_patients):
+    epsilon = 0.05 #on avait choisi 5% dans la partie théorique
     t = ['A', 'B', 'C', 'D', 'E']
     testingSample = randint(1, 300)
     it = testingSample
@@ -185,7 +186,7 @@ def exo1Variant(simulateur,nb_patients):
         3] * nb_D, success_rates[4] * nb_E
     best = pickTheBest(success_rates)
     for i in range(nb_patients - testingSample):
-        if DiceRoll():
+        if DiceRoll(epsilon):
             traitement_choisi = t[best]
         else:
             traitement_choisi = t[randint(0, 4)]
@@ -235,7 +236,7 @@ def exo1VariantMoyenne(simulateur,nb_patients):
     all_proportions = []
 
     for loop in range(1000):
-        total, success, rates, proportions = exoFacultatif1Mono(simulateur, nb_patients)
+        total, success, rates, proportions = exo1Variant(simulateur, nb_patients)
         all_total_success.append(total)
         all_success_tracking.append(success)
         all_success_rates.append(rates)
@@ -247,6 +248,54 @@ def exo1VariantMoyenne(simulateur,nb_patients):
     mean_proportions = np.mean(all_proportions, axis=0)
 
     return mean_total_success, mean_success_tracking, mean_success_rates, mean_proportions
+
+def exoBayesienMono(simulateur, nb_patients, alpha0=1, beta0=1):
+    t = ['A', 'B', 'C', 'D', 'E']
+    n = [0]*5  # Nombre d'essais par traitement
+    s = [0]*5  # Succès par traitement
+    total_success = 0
+    success_tracking = []
+    proportionality_tracking = []
+
+    for i in range(nb_patients):
+        samples = [np.random.beta(alpha0 + s[k], beta0 + n[k] - s[k]) if n[k] > 0 else np.random.beta(alpha0, beta0) for k in range(5)]
+        best = np.argmax(samples)
+        traitement = t[best]
+
+        result = simulateur.administrer_traitement(traitement)
+        k = best
+        n[k] += 1
+        if result:
+            s[k] += 1
+            total_success += 1
+
+        success_tracking.append(total_success)
+        proportions = [n[k]/(i+1) for k in range(5)]
+        proportionality_tracking.append(proportions)
+
+    success_rates = [s[k]/n[k] if n[k] > 0 else 0 for k in range(5)]
+    return total_success, success_tracking, success_rates, proportionality_tracking
+
+def BayesienMoyenne(simulateur, nb_patients, alpha0=1, beta0=1):
+    all_total_success = []
+    all_success_tracking = []
+    all_success_rates = []
+    all_proportions = []
+
+    for loop in range(1000):
+        total, success, rates, proportions = exoBayesienMono(simulateur, nb_patients, alpha0,beta0)
+        all_total_success.append(total)
+        all_success_tracking.append(success)
+        all_success_rates.append(rates)
+        all_proportions.append(proportions)
+
+    mean_total_success = np.mean(all_total_success)
+    mean_success_tracking = np.mean(all_success_tracking, axis=0)
+    mean_success_rates = np.mean(all_success_rates, axis=0)
+    mean_proportions = np.mean(all_proportions, axis=0)
+
+    return mean_total_success, mean_success_tracking, mean_success_rates, mean_proportions
+
 if __name__ == "__main__":
     simulator = SimulateurTraitement()
     '''
